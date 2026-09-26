@@ -269,13 +269,13 @@ export function importJson(text: string): { ok: true } | { ok: false; error: str
     const data = JSON.parse(text);
     const incoming = data?.state ?? data;
     if (!incoming || typeof incoming !== 'object' || !('attempts' in incoming)) {
-      return { ok: false, error: 'This file is not an ESAT Crucible backup.' };
+      return { ok: false, error: 'That is not an ESAT Crucible backup.' };
     }
     replaceState(mergeState(defaultState(), incoming as Partial<State>));
     flush();
     return { ok: true };
   } catch {
-    return { ok: false, error: 'The file could not be read as JSON.' };
+    return { ok: false, error: 'The backup could not be read. Check that it was copied in full.' };
   }
 }
 

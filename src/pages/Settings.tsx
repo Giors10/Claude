@@ -11,13 +11,30 @@ export function SettingsPage() {
   const answeredCount = useStore((s) => Object.keys(s.qstats).length);
   const cardCount = useStore((s) => Object.keys(s.cards).length);
   const [confirmReset, setConfirmReset] = useState(false);
+  // Copy/paste fallback for hosts where files cannot be saved (e.g. downloads declined in the claude.ai viewer).
+  const [copyText, setCopyText] = useState<string | null>(null);
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState('');
+  const copyRef = useRef<HTMLTextAreaElement>(null);
   const [toast, showToast] = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const hostTheme = inArtifact();
 
   const doExport = async () => {
-    const ok = await saveFile(`esat-crucible-backup-${new Date().toISOString().slice(0, 10)}.json`, exportJson());
-    showToast(ok ? 'Backup saved' : 'The download was blocked. Your data is still saved in this browser.');
+    const json = exportJson();
+    const ok = await saveFile(`esat-crucible-backup-${new Date().toISOString().slice(0, 10)}.json`, json);
+    if (ok) showToast('Backup saved');
+    else setCopyText(json);
+  };
+
+  const copyBackup = async () => {
+    try {
+      await navigator.clipboard.writeText(copyText ?? '');
+      showToast('Backup copied. Paste it into a note or email to keep it.');
+    } catch {
+      copyRef.current?.select();
+      showToast('Press Ctrl+C (or ⌘C) to copy the selected text.');
+    }
   };
 
   const doImport = (file: File) => {
@@ -128,6 +145,9 @@ export function SettingsPage() {
           <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
             <Icon name="upload" /> Restore from a backup
           </button>
+          <button type="button" className="btn btn-ghost" onClick={() => setPasteOpen(true)}>
+            Paste backup text
+          </button>
           <input
             ref={fileRef}
             id="restore-file"
@@ -145,6 +165,62 @@ export function SettingsPage() {
           </button>
         </div>
       </section>
+
+      {copyText !== null && (
+        <Modal
+          title="Copy your backup"
+          onClose={() => setCopyText(null)}
+          actions={
+            <>
+              <button type="button" className="btn" onClick={() => setCopyText(null)}>
+                Close
+              </button>
+              <button type="button" className="btn btn-primary" onClick={copyBackup}>
+                Copy backup text
+              </button>
+            </>
+          }
+        >
+          <p className="muted" style={{ margin: 0 }}>
+            This page cannot save files here, so your backup is shown as text. Copy it somewhere safe; to restore it, use “Paste backup text”.
+          </p>
+          <textarea ref={copyRef} className="input mono" readOnly value={copyText} rows={8} style={{ fontSize: '0.78rem' }} onFocus={(e) => e.currentTarget.select()} aria-label="Backup text" />
+        </Modal>
+      )}
+
+      {pasteOpen && (
+        <Modal
+          title="Restore from backup text"
+          onClose={() => setPasteOpen(false)}
+          actions={
+            <>
+              <button type="button" className="btn" onClick={() => setPasteOpen(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={!pasteText.trim()}
+                onClick={() => {
+                  const res = importJson(pasteText);
+                  showToast(res.ok ? 'Backup restored' : res.error);
+                  if (res.ok) {
+                    setPasteOpen(false);
+                    setPasteText('');
+                  }
+                }}
+              >
+                Restore
+              </button>
+            </>
+          }
+        >
+          <p className="muted" style={{ margin: 0 }}>
+            Paste the text of an ESAT Crucible backup. It replaces the progress saved in this browser.
+          </p>
+          <textarea className="input mono" rows={8} value={pasteText} onChange={(e) => setPasteText(e.target.value)} style={{ fontSize: '0.78rem' }} aria-label="Backup text to restore" />
+        </Modal>
+      )}
 
       {confirmReset && (
         <Modal

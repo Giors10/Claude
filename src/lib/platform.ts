@@ -46,6 +46,8 @@ export async function saveFile(filename: string, data: string, mime = 'applicati
       return false;
     }
   }
+  // The viewer's sandbox ignores download links, so report failure rather than a save that never happened.
+  if (inArtifact()) return false;
   try {
     const blob = new Blob([data], { type: mime });
     const url = URL.createObjectURL(blob);

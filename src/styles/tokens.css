@@ -1,0 +1,183 @@
+/*
+ * ESAT Crucible design tokens.
+ * Light theme: "blueline print" — cool paper, Prussian-blue ink.
+ * Dark theme: "blueprint" — deep cyanotype ground, pale ink.
+ * One accent (cyanotype blue) plus a warm "crucible glow" amber used only
+ * for flags and highlights. Semantic colours are separate from the accent.
+ */
+:root {
+  color-scheme: light;
+
+  --paper: #f2f5f9;
+  --paper-grid: rgba(31, 79, 168, 0.055);
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --surface-3: #eaeff6;
+  --sunken: #e4eaf2;
+  --ink: #0e1a2b;
+  --ink-2: #2c3b52;
+  --muted: #56667d;
+  --faint: #8190a5;
+  --rule: #d6dee9;
+  --rule-strong: #b8c5d6;
+
+  --accent: #1f4fa8;
+  --accent-hover: #1a4391;
+  --accent-ink: #ffffff;
+  --accent-soft: #e5edfa;
+  --accent-soft-2: #cddcf6;
+  --accent-text: #1c4697;
+
+  --glow: #c77d0a;
+  --glow-soft: #fbf0dc;
+  --glow-ink: #3d2600;
+
+  --good: #177a4b;
+  --good-soft: #e1f3e9;
+  --bad: #b8322f;
+  --bad-soft: #fbe6e5;
+  --warn: #9a6400;
+  --warn-soft: #fcf1dc;
+
+  --focus: #1f4fa8;
+  --shadow-1: 0 1px 2px rgba(14, 26, 43, 0.06);
+  --shadow-2: 0 1px 2px rgba(14, 26, 43, 0.05), 0 8px 24px rgba(14, 26, 43, 0.08);
+  --shadow-3: 0 12px 40px rgba(14, 26, 43, 0.18);
+  --scrim: rgba(10, 20, 36, 0.45);
+
+  /* diagram palette */
+  --d-bg: var(--surface);
+  --d-ink: #16243a;
+  --d-thin: #4a5b73;
+  --d-grid: #e3e9f1;
+  --d-grid-major: #c9d4e2;
+  --d-accent: #1f4fa8;
+  --d-mark: #c77d0a;
+  --d-area: rgba(31, 79, 168, 0.07);
+  --d-area-strong: rgba(31, 79, 168, 0.16);
+  --d-area-alt: rgba(199, 125, 10, 0.18);
+  --d-water: #cfe3fb;
+  --d-oil: #f6dfa7;
+  --d-mass: #e9eef5;
+  --d-bar: rgba(31, 79, 168, 0.14);
+
+  --font-display: 'Archivo', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --r-s: 6px;
+  --r-m: 10px;
+  --r-l: 14px;
+
+  --text-xs: 0.75rem;
+  --text-s: 0.8125rem;
+  --text-m: 0.9375rem;
+  --text-l: 1.0625rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.625rem;
+  --text-3xl: 2.125rem;
+  --text-4xl: clamp(2.2rem, 4.2vw, 3.1rem);
+
+  --sidebar-w: 248px;
+  --q-size: 1.0625rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper: #0a1a2e;
+    --paper-grid: rgba(143, 178, 255, 0.06);
+    --surface: #0f2440;
+    --surface-2: #122a4a;
+    --surface-3: #173257;
+    --sunken: #0c1f37;
+    --ink: #e7eef8;
+    --ink-2: #c6d3e5;
+    --muted: #97a9c2;
+    --faint: #6f84a2;
+    --rule: #203d62;
+    --rule-strong: #2f5282;
+    --accent: #86aaff;
+    --accent-hover: #a2beff;
+    --accent-ink: #081427;
+    --accent-soft: #16315c;
+    --accent-soft-2: #1f4278;
+    --accent-text: #a7c1ff;
+    --glow: #f4b942;
+    --glow-soft: #3a2c0f;
+    --glow-ink: #fff3da;
+    --good: #52c58f;
+    --good-soft: #0f3527;
+    --bad: #f28a86;
+    --bad-soft: #3f1a1f;
+    --warn: #f4b942;
+    --warn-soft: #3a2c0f;
+    --focus: #a2beff;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-3: 0 12px 40px rgba(0, 0, 0, 0.55);
+    --scrim: rgba(2, 8, 18, 0.65);
+    --d-ink: #dfe8f5;
+    --d-thin: #a5b6cd;
+    --d-grid: #1b3558;
+    --d-grid-major: #274a78;
+    --d-accent: #8fb2ff;
+    --d-mark: #f4b942;
+    --d-area: rgba(143, 178, 255, 0.08);
+    --d-area-strong: rgba(143, 178, 255, 0.2);
+    --d-area-alt: rgba(244, 185, 66, 0.22);
+    --d-water: #1d4777;
+    --d-oil: #6a5418;
+    --d-mass: #1b3a62;
+    --d-bar: rgba(143, 178, 255, 0.2);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #0a1a2e;
+  --paper-grid: rgba(143, 178, 255, 0.06);
+  --surface: #0f2440;
+  --surface-2: #122a4a;
+  --surface-3: #173257;
+  --sunken: #0c1f37;
+  --ink: #e7eef8;
+  --ink-2: #c6d3e5;
+  --muted: #97a9c2;
+  --faint: #6f84a2;
+  --rule: #203d62;
+  --rule-strong: #2f5282;
+  --accent: #86aaff;
+  --accent-hover: #a2beff;
+  --accent-ink: #081427;
+  --accent-soft: #16315c;
+  --accent-soft-2: #1f4278;
+  --accent-text: #a7c1ff;
+  --glow: #f4b942;
+  --glow-soft: #3a2c0f;
+  --glow-ink: #fff3da;
+  --good: #52c58f;
+  --good-soft: #0f3527;
+  --bad: #f28a86;
+  --bad-soft: #3f1a1f;
+  --warn: #f4b942;
+  --warn-soft: #3a2c0f;
+  --focus: #a2beff;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-3: 0 12px 40px rgba(0, 0, 0, 0.55);
+  --scrim: rgba(2, 8, 18, 0.65);
+  --d-ink: #dfe8f5;
+  --d-thin: #a5b6cd;
+  --d-grid: #1b3558;
+  --d-grid-major: #274a78;
+  --d-accent: #8fb2ff;
+  --d-mark: #f4b942;
+  --d-area: rgba(143, 178, 255, 0.08);
+  --d-area-strong: rgba(143, 178, 255, 0.2);
+  --d-area-alt: rgba(244, 185, 66, 0.22);
+  --d-water: #1d4777;
+  --d-oil: #6a5418;
+  --d-mass: #1b3a62;
+  --d-bar: rgba(143, 178, 255, 0.2);
+}

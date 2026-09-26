@@ -1,0 +1,37 @@
+{
+  "name": "esat-crucible",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ESAT Crucible: a hard predicted ESAT paper (Mathematics 1, Mathematics 2, Physics) with Rasch-based 1.0-9.0 scoring, worked solutions and a full revision toolkit.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run check && vite build",
+    "build:artifact": "vite build --mode artifact && node scripts/make-artifact.mjs",
+    "preview": "vite preview",
+    "check": "tsc --noEmit && vitest run",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "verify:answers": "node scripts/export-content.mjs && python3 scripts/verify_answers.py",
+    "verify:artifact": "vite build --mode artifact && node scripts/make-artifact.mjs --verify",
+    "check:layout": "node scripts/check-overflow.mjs --width=360 && node scripts/check-overflow.mjs --width=768",
+    "shots": "node scripts/screenshots.mjs"
+  },
+  "dependencies": {
+    "katex": "0.18.9",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "playwright": "1.63.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.6",
+    "vite-plugin-singlefile": "2.3.3",
+    "vitest": "5.0.2"
+  }
+}

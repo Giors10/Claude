@@ -11,7 +11,8 @@ For each question this script:
      option equals the value and that it is the option marked correct in
      src/content (read from build/content.json).
 
-Run:  node scripts/export-content.mjs && python3 scripts/verify_answers.py
+Run:  pip install -r scripts/requirements.txt
+      node scripts/export-content.mjs && python3 scripts/verify_answers.py
 """
 from __future__ import annotations
 
@@ -344,7 +345,7 @@ def _():
     assert sp.simplify(OP - (coeffs[0] * a + coeffs[1] * c)) == sp.zeros(2, 1)
     # second: random numeric vectors and linear algebra
     rnd = random.Random(7)
-    import numpy as np  # noqa: WPS433  (numpy ships with sympy's optional deps; fall back below)
+    import numpy as np  # noqa: WPS433  (see scripts/requirements.txt)
 
     av = np.array([rnd.uniform(1, 3), rnd.uniform(-1, 1)])
     cv = np.array([rnd.uniform(-1, 1), rnd.uniform(1, 3)])

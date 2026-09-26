@@ -34,7 +34,7 @@ jobs:
       - name: Install
         run: |
           npm ci
-          python -m pip install --quiet sympy
+          python -m pip install --quiet -r scripts/requirements.txt
 
       - name: Check, verify answers and build
         run: |

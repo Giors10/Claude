@@ -55,7 +55,7 @@ Quality checks:
 
 ```bash
 npm run check          # TypeScript and unit tests
-npm run verify:answers # recompute all 81 answers (needs Python 3 with sympy)
+npm run verify:answers # recompute all 81 answers (Python 3: pip install -r scripts/requirements.txt)
 npm run check:layout   # phone and tablet overflow check in Chromium (after a build)
 npm run shots -- build/shots --questions --tabs   # screenshots of every question for review
 ```

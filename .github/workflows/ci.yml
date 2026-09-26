@@ -25,7 +25,7 @@ jobs:
       - name: Install
         run: |
           npm ci
-          python -m pip install --quiet sympy
+          python -m pip install --quiet -r scripts/requirements.txt
 
       - name: Typecheck and unit tests (content, KaTeX strict rendering, scoring, drills, line breaking)
         run: npm run check

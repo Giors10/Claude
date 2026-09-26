@@ -416,3 +416,43 @@ export function Dimension({ a, b, label, id, offset = 0, side = 'right' }: { a: 
     </g>
   );
 }
+
+/** Filament lamp: a circle with a cross, drawn over the wire. */
+export function Lamp({ at, r = 12 }: { at: Pt; r?: number }) {
+  const [x, y] = at;
+  const d = r * Math.SQRT1_2;
+  return (
+    <g>
+      <circle cx={x} cy={y} r={r} className="d-line d-bg-fill" />
+      <line x1={x - d} y1={y - d} x2={x + d} y2={y + d} className="d-line d-thin" />
+      <line x1={x - d} y1={y + d} x2={x + d} y2={y - d} className="d-line d-thin" />
+    </g>
+  );
+}
+
+/** Diode: the triangle points the way conventional current can flow; the bar marks the blocking side. */
+export function Diode({ at, dir = 'right' }: { at: Pt; dir?: 'up' | 'down' | 'left' | 'right' }) {
+  const [x, y] = at;
+  const rot = { right: 0, down: 90, left: 180, up: -90 }[dir];
+  return (
+    <g transform={`rotate(${rot} ${x} ${y})`}>
+      <rect x={x - 9} y={y - 11} width={18} height={22} className="d-bg-fill" />
+      <polygon points={pts([[x - 8, y - 9], [x - 8, y + 9], [x + 7, y]])} className="d-line d-ink-fill" />
+      <line x1={x + 7} x2={x + 7} y1={y - 10} y2={y + 10} className="d-line d-thick" />
+    </g>
+  );
+}
+
+/** A symbol with a subscript, e.g. V₀, set like the maths in the text. */
+export function Sub({ x, y, base, sub, anchor = 'middle', size = 15 }: { x: number; y: number; base: string; sub: string; anchor?: 'start' | 'middle' | 'end'; size?: number }) {
+  return (
+    <text x={x} y={y} textAnchor={anchor} dominantBaseline="central">
+      <tspan className="d-var" style={{ fontSize: size }}>
+        {base}
+      </tspan>
+      <tspan className="d-num" dy={size * 0.3} style={{ fontSize: Math.round(size * 0.7) }}>
+        {sub}
+      </tspan>
+    </text>
+  );
+}

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { PAPER } from '../content/paper';
+import { READY_PAPERS, type PaperId } from '../content/paper';
 import { MODULE_ORDER, MODULES, type ModuleId } from '../content/types';
 import { ScoreRuler } from '../components/Charts';
 import { percentileOf, scoreBand } from '../lib/distributions';
@@ -7,7 +7,7 @@ import { ordinal } from '../lib/format';
 import { STANDARD_ITEMS, conversionTable, itemDifficulty, rawNeeded, scoreModule } from '../lib/rasch';
 import { href } from '../lib/router';
 
-type PaperKind = 'standard' | 'crucible';
+type PaperKind = 'standard' | PaperId;
 
 export function CalculatorPage() {
   const [mod, setMod] = useState<ModuleId>('M1');
@@ -15,12 +15,13 @@ export function CalculatorPage() {
   const [raw, setRaw] = useState(16);
   const [target, setTarget] = useState(7);
 
-  const items = useMemo(() => (kind === 'standard' ? STANDARD_ITEMS : PAPER[mod].map(itemDifficulty)), [kind, mod]);
+  const paper = kind === 'standard' ? null : READY_PAPERS.find((p) => p.id === kind) ?? null;
+  const items = useMemo(() => (paper ? paper.modules[mod].map(itemDifficulty) : STANDARD_ITEMS), [paper, mod]);
   const score = scoreModule(raw, items);
   const table = useMemo(() => conversionTable(items), [items]);
   const band = scoreBand(score.scaled);
   const needStd = rawNeeded(target, STANDARD_ITEMS);
-  const needCru = rawNeeded(target, PAPER[mod].map(itemDifficulty));
+  const needs = READY_PAPERS.map((p) => ({ paper: p, raw: rawNeeded(target, p.modules[mod].map(itemDifficulty)) }));
 
   return (
     <div className="page">
@@ -28,8 +29,8 @@ export function CalculatorPage() {
         <span className="eyebrow">Score calculator</span>
         <h1>Raw mark to ESAT score</h1>
         <p className="lede">
-          Convert a raw mark out of 27 into an estimated 1.0–9.0 score using the Rasch method, for either a typical ESAT paper or this site's harder
-          Crucible paper. Percentiles come from UAT-UK's published October 2025 distributions.
+          Convert a raw mark out of 27 into an estimated 1.0–9.0 score using the Rasch method, for a typical ESAT paper or for any of this site's
+          mock papers, which are set harder. Percentiles come from UAT-UK's published October 2025 distributions.
         </p>
       </header>
 
@@ -46,14 +47,16 @@ export function CalculatorPage() {
             </div>
           </div>
           <div className="stack">
-            <span className="field-label">Paper difficulty</span>
-            <div className="seg" role="group" aria-label="Paper difficulty">
+            <span className="field-label">Paper</span>
+            <div className="seg" role="group" aria-label="Paper">
               <button type="button" aria-pressed={kind === 'standard'} onClick={() => setKind('standard')}>
-                Typical ESAT paper
+                Typical ESAT
               </button>
-              <button type="button" aria-pressed={kind === 'crucible'} onClick={() => setKind('crucible')}>
-                Crucible paper
-              </button>
+              {READY_PAPERS.map((p) => (
+                <button key={p.id} type="button" aria-pressed={kind === p.id} onClick={() => setKind(p.id)}>
+                  {p.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -99,10 +102,23 @@ export function CalculatorPage() {
             </label>
             <input id="target" type="range" min={3} max={9} step={0.1} value={target} onChange={(e) => setTarget(Number(e.target.value))} style={{ accentColor: 'var(--accent)' }} />
           </div>
-          <p>
-            About <strong>{needStd ?? 'more than 27'}/27</strong> on a typical ESAT {MODULES[mod].name} paper, or{' '}
-            <strong>{needCru ?? 'more than 27'}/27</strong> on the Crucible {MODULES[mod].name} paper.
-          </p>
+          <p style={{ margin: 0 }}>Raw marks needed in {MODULES[mod].name}:</p>
+          <table className="need-table">
+            <tbody>
+              <tr>
+                <th scope="row">Typical ESAT paper</th>
+                <td className="mono">{needStd ?? 'more than 27'}/27</td>
+              </tr>
+              {needs.map(({ paper: p, raw: r }) => (
+                <tr key={p.id}>
+                  <th scope="row">
+                    {p.label} · {p.name}
+                  </th>
+                  <td className="mono">{r ?? 'more than 27'}/27</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           <p className="muted" style={{ fontSize: '0.86rem' }}>
             Real papers vary in difficulty from sitting to sitting, and UAT-UK does not publish conversion tables, so treat these as guides of about
             ±1 mark.

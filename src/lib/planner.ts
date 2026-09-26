@@ -1,5 +1,5 @@
 import { LEARN } from '../content/learn';
-import { ALL_QUESTIONS } from '../content/paper';
+import { ALL_QUESTIONS, PAPER_BY_ID, READY_PAPERS, type PaperId } from '../content/paper';
 import type { State } from './store';
 import { daysUntil } from './format';
 
@@ -64,6 +64,15 @@ export function topicPriority(s: State): string[] {
     .map((x) => x.code);
 }
 
+/** The order in which to sit the mock papers: the two realistic papers first, the hardest last. */
+export const SUGGESTED_PAPER_ORDER: PaperId[] = ['forge', 'anvil', 'crucible'];
+
+/** Mock papers not yet completed, in the suggested order. */
+export function papersToSit(s: State): PaperId[] {
+  const sat = new Set(s.attempts.filter((a) => a.kind === 'mock' && a.finishedAt).map((a) => a.paper ?? 'crucible'));
+  return SUGGESTED_PAPER_ORDER.filter((id) => !sat.has(id) && READY_PAPERS.some((p) => p.id === id));
+}
+
 const DRILL_ROTATION = ['mixed', 'trig', 'surds', 'standard', 'fractions', 'logs', 'units', 'percent', 'physics', 'powers', 'estimate'];
 
 export function buildPlan(s: State, today = new Date()): PlanDay[] {
@@ -76,11 +85,17 @@ export function buildPlan(s: State, today = new Date()): PlanDay[] {
   const plan: PlanDay[] = [];
   let topicIdx = 0;
 
-  // Mock days: an early diagnostic if none taken, then a final full paper 3-4 days out.
+  // Mock days: an early diagnostic if none taken, a final full paper 3-4 days out and, with time to spare, one or two in between.
   const mockDays = new Set<number>();
   if (mocksTaken === 0 && days >= 3) mockDays.add(0);
   if (days >= 7) mockDays.add(days - 4);
-  if (days >= 21) mockDays.add(Math.floor(days / 2));
+  if (days >= 28) {
+    mockDays.add(Math.floor(days / 3));
+    mockDays.add(Math.floor((2 * days) / 3));
+  } else if (days >= 14) {
+    mockDays.add(Math.floor(days / 2));
+  }
+  const queue = papersToSit(s);
 
   for (let i = 0; i <= horizon; i++) {
     const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
@@ -106,8 +121,14 @@ export function buildPlan(s: State, today = new Date()): PlanDay[] {
       continue;
     }
     if (mockDays.has(i)) {
-      if (mocksTaken === 0 && i === 0) {
-        add({ key: 'mock', kind: 'mock', title: 'Diagnostic: sit the Crucible paper under strict timing', minutes: 120, route: ['paper'] });
+      const next = queue.shift();
+      if (next) {
+        const p = PAPER_BY_ID[next];
+        const title =
+          mocksTaken === 0 && i === 0
+            ? `Diagnostic: sit ${p.label} (${p.name}) under strict timing`
+            : `Full timed paper: ${p.label} (${p.name})${next === 'crucible' ? ', the hardest,' : ''} under strict timing`;
+        add({ key: 'mock', kind: 'mock', title, minutes: 120, route: ['paper', next] });
       } else {
         add({ key: 'official', kind: 'official', title: 'Full timed paper: an official ESAT practice paper (free from UAT-UK)', minutes: 120, external: OFFICIAL_PREP_URL });
       }

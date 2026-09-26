@@ -1,20 +1,41 @@
-import React, { useState } from 'react';
-import { PAPER } from '../content/paper';
+import React, { useMemo, useState } from 'react';
+import { PAPER_BY_ID, READY_PAPERS, type PaperId, type PaperInfo } from '../content/paper';
 import { MODULE_ORDER, MODULES, type ModuleId } from '../content/types';
 import { Icon } from '../components/Icon';
 import { createMock, gradeByModule } from '../lib/exam';
+import { SUGGESTED_PAPER_ORDER, papersToSit } from '../lib/planner';
+import { STANDARD_ITEMS, itemDifficulty } from '../lib/rasch';
 import { fmtDateTime } from '../lib/format';
 import { href, navigate } from '../lib/router';
-import { updateSettings, useStore } from '../lib/store';
+import { getState, updateSettings, useStore } from '../lib/store';
 
-export function PaperPage() {
+/** Attempts saved before there were several papers belong to Mock 1. */
+export const attemptPaper = (a: { paper?: PaperId }): PaperInfo => PAPER_BY_ID[a.paper ?? 'crucible'];
+
+const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+/** How much harder than a typical real paper, from the Rasch difficulties: 1 (close) to 3 (well above). */
+function hardness(p: PaperInfo): { level: number; label: string } {
+  const gap = mean(MODULE_ORDER.flatMap((m) => p.modules[m].map(itemDifficulty))) - mean(STANDARD_ITEMS);
+  if (gap > 0.25) return { level: 3, label: 'Well above the real test' };
+  if (gap > 0.08) return { level: 2, label: 'A little above the real test' };
+  return { level: 1, label: 'Close to the real test' };
+}
+
+export function PaperPage({ paperId }: { paperId?: string }) {
   const attempts = useStore((s) => s.attempts);
   const activeId = useStore((s) => s.activeId);
   const settings = useStore((s) => s.settings);
-  const seen = useStore((s) => Object.keys(s.qstats).filter((id) => s.qstats[id].attempts > 0).length);
+  const qstats = useStore((s) => s.qstats);
+  const paper =
+    READY_PAPERS.find((p) => p.id === paperId) ?? READY_PAPERS.find((p) => p.id === papersToSit(getState())[0]) ?? READY_PAPERS[0];
   const [mods, setMods] = useState<ModuleId[]>(['M1', 'PH', 'M2']);
   const [strict, setStrict] = useState(true);
   const mocks = attempts.filter((a) => a.kind === 'mock' && a.finishedAt).sort((a, b) => b.createdAt - a.createdAt);
+  const seen = useMemo(
+    () => MODULE_ORDER.flatMap((m) => paper.modules[m]).filter((q) => (qstats[q.id]?.attempts ?? 0) > 0).length,
+    [paper, qstats],
+  );
 
   const toggle = (m: ModuleId) => {
     if (m === 'M1') return;
@@ -22,7 +43,7 @@ export function PaperPage() {
   };
 
   const start = () => {
-    createMock(mods, strict);
+    createMock(paper.id, mods, strict);
     navigate('exam');
   };
 
@@ -31,13 +52,80 @@ export function PaperPage() {
   return (
     <div className="page">
       <header className="page-head">
-        <span className="eyebrow">Predicted paper · for the October 2026 and January 2027 sittings</span>
-        <h1>The Crucible paper</h1>
+        <span className="eyebrow">Mock papers · for the October 2026 and January 2027 sittings</span>
+        <h1>Mock papers</h1>
         <p className="lede">
-          Three full ESAT modules written to the 2026 specification and deliberately set harder than the real test. Every question has a worked
-          solution, an explanation of each tempting wrong answer and an estimated score on the official 1.0–9.0 scale.
+          {READY_PAPERS.length === 1 ? 'A full ESAT paper' : `${READY_PAPERS.length} full ESAT papers`} written to the 2026 specification, each with
+          Mathematics 1, Physics and Mathematics 2. Every question has a worked solution, an explanation of each tempting wrong answer and an
+          estimated score on the official 1.0–9.0 scale.
         </p>
       </header>
+
+      {READY_PAPERS.length > 1 && (
+        <p className="paper-order">
+          <span>Suggested order:</span>
+          <ol>
+            {SUGGESTED_PAPER_ORDER.filter((id) => READY_PAPERS.some((p) => p.id === id)).map((id) => (
+              <li key={id}>
+                <a href={href('paper', id)}>{PAPER_BY_ID[id].label}</a>
+              </li>
+            ))}
+          </ol>
+          <span>: the two realistic papers first, the hardest last.</span>
+        </p>
+      )}
+
+      {READY_PAPERS.length > 1 && (
+        <section className="paper-picker" aria-label="Choose a paper">
+          {READY_PAPERS.map((p) => {
+            const last = mocks.find((a) => attemptPaper(a).id === p.id);
+            const graded = last ? gradeByModule(last) : [];
+            const qs = MODULE_ORDER.flatMap((m) => p.modules[m]);
+            const hard = qs.filter((q) => q.difficulty >= 4).length;
+            const h = hardness(p);
+            return (
+              <a
+                key={p.id}
+                href={href('paper', p.id)}
+                className="paper-card"
+                aria-current={p.id === paper.id ? 'true' : undefined}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('paper', p.id);
+                }}
+              >
+                <span className="paper-card-top">
+                  <span className="paper-card-label">{p.label}</span>
+                  <span className="heat-level" title={h.label} aria-label={`Difficulty: ${h.label.toLowerCase()}`}>
+                    {[1, 2, 3].map((i) => (
+                      <i key={i} className={i <= h.level ? 'on' : undefined} />
+                    ))}
+                  </span>
+                </span>
+                <span className="paper-card-name">{p.name}</span>
+                <span className="paper-card-tag">{p.tagline}</span>
+                <span className="paper-card-meta">
+                  {h.label} · {qs.length} questions, {hard} rated hard
+                </span>
+                <span className="paper-card-last">
+                  {graded.length
+                    ? 'Last attempt: ' + graded.map((g) => `${MODULES[g.module].short} ${g.score.scaled.toFixed(1)}`).join(' · ')
+                    : 'Not attempted yet'}
+                </span>
+              </a>
+            );
+          })}
+        </section>
+      )}
+
+      <section className="stack">
+        <h2 style={{ fontSize: '1.35rem' }}>
+          {paper.label} · {paper.name}
+        </h2>
+        <p className="muted" style={{ maxWidth: '72ch', margin: 0 }}>
+          {paper.about}
+        </p>
+      </section>
 
       {activeId && (
         <div className="note note-warn row-between">
@@ -52,7 +140,7 @@ export function PaperPage() {
         {MODULE_ORDER.map((m) => {
           const info = MODULES[m];
           const on = mods.includes(m);
-          const qs = PAPER[m];
+          const qs = paper.modules[m];
           const hard = qs.filter((q) => q.difficulty >= 4).length;
           return (
             <label key={m} className="module-card" style={{ cursor: m === 'M1' ? 'default' : 'pointer', borderColor: on ? 'var(--accent)' : undefined }}>
@@ -180,7 +268,8 @@ export function PaperPage() {
             </p>
           )}
           <button type="button" className="btn btn-primary btn-lg" onClick={start} disabled={!!activeId}>
-            <Icon name="play" /> Start {mods.length === 3 ? 'the full paper' : mods.map((m) => MODULES[m].short).join(' + ')}
+            <Icon name="play" /> Start {paper.label}
+            {mods.length === 3 ? '' : ': ' + mods.map((m) => MODULES[m].short).join(' + ')}
           </button>
           <p className="muted" style={{ fontSize: '0.82rem' }}>
             Modules run in the real ESAT order: Mathematics 1, then Physics, then Mathematics 2. Engineering at Cambridge requires all three.
@@ -201,6 +290,7 @@ export function PaperPage() {
               <thead>
                 <tr>
                   <th>Date</th>
+                  <th>Paper</th>
                   <th>Mode</th>
                   {MODULE_ORDER.map((m) => (
                     <th key={m} className="num">
@@ -216,6 +306,7 @@ export function PaperPage() {
                   return (
                     <tr key={a.id} className="clickable" onClick={() => navigate('results', a.id)}>
                       <td>{fmtDateTime(a.createdAt)}</td>
+                      <td className="nowrap">{attemptPaper(a).label}</td>
                       <td>{a.strict ? 'Strict' : 'Relaxed'}</td>
                       {MODULE_ORDER.map((m) => {
                         const g = graded.find((x) => x.module === m);

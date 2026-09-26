@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ALL_QUESTIONS } from '../content/paper';
+import { ALL_QUESTIONS, PAPERS, paperOf, type PaperId } from '../content/paper';
 import { MODULE_ORDER, MODULES, topicName, type ModuleId } from '../content/types';
 import { Icon } from '../components/Icon';
 import { DifficultyPips } from '../components/QuestionView';
@@ -10,6 +10,7 @@ type Status = 'any' | 'unseen' | 'right' | 'wrong' | 'bookmarked';
 
 export function BankPage() {
   const qstats = useStore((s) => s.qstats);
+  const [paper, setPaper] = useState<PaperId | 'all'>('all');
   const [mod, setMod] = useState<ModuleId | 'all'>('all');
   const [topic, setTopic] = useState('all');
   const [status, setStatus] = useState<Status>('any');
@@ -18,7 +19,8 @@ export function BankPage() {
 
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return ALL_QUESTIONS.filter((x) => mod === 'all' || x.module === mod)
+    return ALL_QUESTIONS.filter((x) => paper === 'all' || paperOf(x).id === paper)
+      .filter((x) => mod === 'all' || x.module === mod)
       .filter((x) => topic === 'all' || x.topic === topic)
       .filter((x) => x.difficulty >= minDiff)
       .filter((x) => {
@@ -29,8 +31,12 @@ export function BankPage() {
         if (status === 'bookmarked') return !!st?.bookmarked;
         return true;
       })
-      .filter((x) => !needle || [x.title, x.id, topicName(x.topic), ...x.skills, ...x.spec].join(' ').toLowerCase().includes(needle));
-  }, [mod, topic, status, minDiff, q, qstats]);
+      .filter((x) => {
+        if (!needle) return true;
+        const p = paperOf(x);
+        return [x.title, x.id, p.label, p.name, topicName(x.topic), ...x.skills, ...x.spec].join(' ').toLowerCase().includes(needle);
+      });
+  }, [paper, mod, topic, status, minDiff, q, qstats]);
 
   const topicOptions = mod === 'all' ? MODULE_ORDER.flatMap((m) => MODULES[m].topics) : MODULES[mod].topics;
 
@@ -39,7 +45,10 @@ export function BankPage() {
       <header className="page-head">
         <span className="eyebrow">Question bank · {ALL_QUESTIONS.length} questions</span>
         <h1>Question bank</h1>
-        <p className="lede">Every Crucible question, searchable by module, topic, specification point, skill and difficulty, with your history on each.</p>
+        <p className="lede">
+          Every question from the {PAPERS.length} mock papers, searchable by paper, module, topic, specification point, skill and difficulty, with
+          your history on each.
+        </p>
       </header>
 
       <section className="card stack">
@@ -90,6 +99,19 @@ export function BankPage() {
           </div>
         </div>
         <div className="row">
+          <span className="field-label">Paper</span>
+          <div className="seg" role="group" aria-label="Paper">
+            <button type="button" aria-pressed={paper === 'all'} onClick={() => setPaper('all')}>
+              All
+            </button>
+            {PAPERS.map((p) => (
+              <button key={p.id} type="button" aria-pressed={paper === p.id} onClick={() => setPaper(p.id)}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="row">
           <span className="field-label">Minimum difficulty</span>
           <div className="seg" role="group" aria-label="Minimum difficulty">
             {[1, 2, 3, 4, 5].map((d) => (
@@ -108,7 +130,7 @@ export function BankPage() {
         <table className="data">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>Paper</th>
               <th>Question</th>
               <th className="hide-sm">Topic</th>
               <th>Difficulty</th>
@@ -121,7 +143,12 @@ export function BankPage() {
               const st = qstats[x.id];
               return (
                 <tr key={x.id} className="clickable" onClick={() => navigate('question', x.id)}>
-                  <td className="mono nowrap">{x.id}</td>
+                  <td className="nowrap">
+                    <div style={{ fontWeight: 600 }}>{paperOf(x).label}</div>
+                    <div className="mono muted" style={{ fontSize: '0.78rem' }}>
+                      {MODULES[x.module].short} Q{x.n}
+                    </div>
+                  </td>
                   <td>
                     <div style={{ fontWeight: 600 }}>{x.title}</div>
                     <div className="muted" style={{ fontSize: '0.8rem' }}>

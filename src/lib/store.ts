@@ -45,6 +45,8 @@ export type AttemptKind = 'mock' | 'practice';
 export interface Attempt {
   id: string;
   kind: AttemptKind;
+  /** Mock attempts: which paper was sat (attempts saved before papers existed are Mock 1). */
+  paper?: 'crucible' | 'forge' | 'anvil';
   /** strict = real exam rules (no pause, no going back to earlier modules). */
   strict: boolean;
   /** practice: reveal the answer after each question. */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PAPER } from '../src/content/paper';
+import { PAPERS } from '../src/content/paper';
+import { MODULE_ORDER } from '../src/content/types';
 import { OCT_2025_DISTRIBUTION, percentileOf } from '../src/lib/distributions';
 import {
   STANDARD_ITEMS,
@@ -22,17 +23,20 @@ describe('Rasch scoring', () => {
     expect(table[0]).toBe(1);
   });
 
+  const MODULE_SETS = PAPERS.flatMap((p) => MODULE_ORDER.map((m) => p.modules[m]));
+
   it('is monotonic in the raw mark', () => {
-    for (const qs of Object.values(PAPER)) {
+    for (const qs of MODULE_SETS) {
       const table = conversionTable(qs.map(itemDifficulty));
       for (let r = 1; r < table.length; r++) expect(table[r]).toBeGreaterThanOrEqual(table[r - 1]);
     }
   });
 
-  it('gives a higher score for the same raw mark on the harder Crucible paper', () => {
-    for (const qs of Object.values(PAPER)) {
+  it('gives a higher score for a typical raw mark on every mock paper, since each is set harder than the real test', () => {
+    // Near full marks the gap closes: a standard module has a few extremely hard items.
+    for (const qs of MODULE_SETS) {
       const items = qs.map(itemDifficulty);
-      for (const raw of [8, 12, 16, 20]) {
+      for (const raw of [6, 9, 12, 15, 18]) {
         expect(scoreModule(raw, items).scaled).toBeGreaterThan(scoreModule(raw, STANDARD_ITEMS).scaled);
       }
     }
@@ -49,10 +53,22 @@ describe('Rasch scoring', () => {
   });
 
   it('reports a likely range that contains the estimate', () => {
-    const s = scoreModule(14, PAPER.M1.map(itemDifficulty));
+    const s = scoreModule(14, PAPERS[0].modules.M1.map(itemDifficulty));
     expect(s.low).toBeLessThanOrEqual(s.scaled);
     expect(s.high).toBeGreaterThanOrEqual(s.scaled);
     expect(s.standardEquivalent).toBeGreaterThan(14);
+  });
+
+  it('keeps Mock 1 the hardest paper and the other two a little harder than the real test', () => {
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    const standard = mean(STANDARD_ITEMS);
+    for (const m of MODULE_ORDER) {
+      const [crucible, ...others] = PAPERS.map((p) => mean(p.modules[m].map(itemDifficulty)));
+      for (const d of others) {
+        expect(d, m).toBeGreaterThan(standard + 0.05);
+        expect(d, m).toBeLessThan(crucible);
+      }
+    }
   });
 
   it('finds the raw mark needed for a target score', () => {

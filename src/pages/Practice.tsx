@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ALL_QUESTIONS } from '../content/paper';
+import { ALL_QUESTIONS, PAPERS, paperOf, type PaperId } from '../content/paper';
 import { MODULE_ORDER, MODULES, type ModuleId, type Question } from '../content/types';
 import { Icon } from '../components/Icon';
 import { createPractice, mistakesDue } from '../lib/exam';
@@ -15,6 +15,7 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
   const due = useMemo(() => mistakesDue(getState()), [qstats]); // eslint-disable-line react-hooks/exhaustive-deps
   const [topics, setTopics] = useState<string[]>(() => (preset === 'topic' && arg ? [arg] : []));
   const [mods, setMods] = useState<ModuleId[]>(() => (preset === 'topic' && arg ? [ALL_QUESTIONS.find((q) => q.topic === arg)?.module ?? 'M1'] : ['M1', 'PH', 'M2']));
+  const [papers, setPapers] = useState<PaperId[]>(() => PAPERS.map((p) => p.id));
   const [diff, setDiff] = useState<[number, number]>([1, 5]);
   const [count, setCount] = useState(10);
   const [source, setSource] = useState<Source>('all');
@@ -24,7 +25,7 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
 
   const pool = useMemo(
     () =>
-      ALL_QUESTIONS.filter((q) => mods.includes(q.module))
+      ALL_QUESTIONS.filter((q) => mods.includes(q.module) && papers.includes(paperOf(q).id))
         .filter((q) => topics.length === 0 || topics.includes(q.topic))
         .filter((q) => q.difficulty >= diff[0] && q.difficulty <= diff[1])
         .filter((q) => {
@@ -34,7 +35,7 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
           if (source === 'bookmarked') return !!st?.bookmarked;
           return true;
         }),
-    [mods, topics, diff, source, qstats],
+    [papers, mods, topics, diff, source, qstats],
   );
 
   const start = (qs: Question[], title: string, opts?: { timed?: boolean; instant?: boolean }) => {
@@ -44,11 +45,15 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
   };
 
   const startCustom = () => {
-    const chosen = (shuffleOn ? shuffle(pool) : pool).slice(0, count);
+    const chosen = (shuffleOn ? shuffle(pool) : pool).slice(0, count || pool.length);
     const label = topics.length ? topics.join(' + ') : mods.map((m) => MODULES[m].short).join(' + ');
     start(chosen, `Practice: ${label}`);
   };
 
+  const togglePaper = (id: PaperId) => {
+    const next = papers.includes(id) ? papers.filter((x) => x !== id) : [...papers, id];
+    if (next.length) setPapers(next);
+  };
   const toggleTopic = (code: string) => setTopics((t) => (t.includes(code) ? t.filter((x) => x !== code) : [...t, code]));
   const toggleMod = (m: ModuleId) => {
     const next = mods.includes(m) ? mods.filter((x) => x !== m) : [...mods, m];
@@ -60,7 +65,7 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
   const presets: { title: string; desc: string; qs: () => Question[]; timed?: boolean; instant?: boolean }[] = [
     {
       title: 'The ten hardest',
-      desc: 'The highest-rated questions across all three modules, with instant feedback.',
+      desc: 'The highest-rated questions from all three papers, with instant feedback.',
       qs: () => [...ALL_QUESTIONS].sort((a, b) => b.difficulty - a.difficulty || b.time - a.time).slice(0, 10),
     },
     {
@@ -72,13 +77,13 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
     },
     {
       title: 'Calculus focus',
-      desc: 'Every differentiation and integration question (MM6, MM7).',
-      qs: () => ALL_QUESTIONS.filter((q) => q.topic === 'MM6' || q.topic === 'MM7'),
+      desc: '12 differentiation and integration questions (MM6, MM7) from all three papers.',
+      qs: () => shuffle(ALL_QUESTIONS.filter((q) => q.topic === 'MM6' || q.topic === 'MM7')).slice(0, 12),
     },
     {
       title: 'Graphs and diagrams',
-      desc: 'Every question with a graph, circuit or geometric figure.',
-      qs: () => ALL_QUESTIONS.filter((q) => q.diagram || q.options.some((o) => typeof o !== 'string')),
+      desc: '12 questions built around a graph, circuit or geometric figure.',
+      qs: () => shuffle(ALL_QUESTIONS.filter((q) => q.diagram || q.options.some((o) => typeof o !== 'string'))).slice(0, 12),
     },
   ];
 
@@ -122,12 +127,13 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
         <div className="card stack">
           <h3>About these questions</h3>
           <p className="muted" style={{ fontSize: '0.92rem' }}>
-            Practice draws on the 81 Crucible questions. For an unbiased score, sit the full paper under strict conditions first, then practise.
-            The speed drills generate unlimited fresh questions.
+            Practice draws on all {ALL_QUESTIONS.length} questions from the {PAPERS.length} mock papers. For an unbiased score, sit a paper under
+            strict conditions before practising its questions; the paper filter below lets you keep one paper unseen. The speed drills generate
+            unlimited fresh questions.
           </p>
           <div className="row">
             <a className="btn btn-sm" href={href('paper')}>
-              <Icon name="paper" /> Crucible paper
+              <Icon name="paper" /> Mock papers
             </a>
             <a className="btn btn-sm" href={href('drills')}>
               <Icon name="bolt" /> Speed drills
@@ -163,6 +169,16 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
       <section className="card stack-l">
         <h2>Custom set</h2>
         <div className="stack">
+          <span className="field-label">Papers</span>
+          <div className="row">
+            {PAPERS.map((p) => (
+              <button key={p.id} type="button" className="chip" aria-pressed={papers.includes(p.id)} onClick={() => togglePaper(p.id)}>
+                {p.label} · {p.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="stack">
           <span className="field-label">Modules</span>
           <div className="row">
             {MODULE_ORDER.map((m) => (
@@ -180,7 +196,7 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
                 {MODULES[m].short}
               </span>
               {MODULES[m].topics.map((t) => {
-                const n = ALL_QUESTIONS.filter((q) => q.topic === t.code).length;
+                const n = ALL_QUESTIONS.filter((q) => q.topic === t.code && papers.includes(paperOf(q).id)).length;
                 return (
                   <button key={t.code} type="button" className="chip" aria-pressed={topics.includes(t.code)} onClick={() => toggleTopic(t.code)} title={t.name}>
                     {t.code} · {t.name} <span className="muted">{n}</span>
@@ -222,9 +238,9 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
           <div className="field">
             <label htmlFor="count">Number of questions</label>
             <select id="count" className="input" value={count} onChange={(e) => setCount(Number(e.target.value))}>
-              {[5, 9, 10, 15, 20, 27, 81].map((c) => (
+              {[5, 9, 10, 15, 20, 27, 40, 0].map((c) => (
                 <option key={c} value={c}>
-                  {c === 81 ? 'All' : c}
+                  {c === 0 ? 'All matching' : c}
                 </option>
               ))}
             </select>
@@ -247,7 +263,7 @@ export function PracticePage({ preset, arg }: { preset?: string; arg?: string })
         <div className="row-between">
           <span className="muted">
             {pool.length} matching question{pool.length === 1 ? '' : 's'}
-            {pool.length > 0 && ` · you'll get ${Math.min(count, pool.length)}`}
+            {pool.length > 0 && ` · you'll get ${Math.min(count || pool.length, pool.length)}`}
           </span>
           <button type="button" className="btn btn-primary btn-lg" disabled={!pool.length || !!activeId} onClick={startCustom}>
             <Icon name="play" /> Start practice

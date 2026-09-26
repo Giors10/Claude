@@ -38,7 +38,7 @@ export function ExamPage() {
       <div className="exam" style={{ placeItems: 'center', display: 'grid' }}>
         <div className="card stack-l" style={{ maxWidth: 480, margin: 16 }}>
           <h2>No paper in progress</h2>
-          <p className="muted">Start the Crucible paper or build a practice set.</p>
+          <p className="muted">Start a mock paper or build a practice set.</p>
           <div className="row">
             {lastFinished && (
               <a className="btn btn-primary" href={href('results', lastFinished.id)}>
@@ -46,7 +46,7 @@ export function ExamPage() {
               </a>
             )}
             <a className="btn" href={href('paper')}>
-              Crucible paper
+              Mock papers
             </a>
             <a className="btn" href={href('practice')}>
               Practice

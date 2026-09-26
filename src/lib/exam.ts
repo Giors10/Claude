@@ -1,4 +1,4 @@
-import { PAPER, getQuestion } from '../content/paper';
+import { PAPER_BY_ID, getQuestion, type PaperId } from '../content/paper';
 import { MODULE_ORDER, type ModuleId, type Question } from '../content/types';
 import { itemDifficulty, scoreModule, type ModuleScore } from './rasch';
 import {
@@ -33,17 +33,20 @@ function newRun(module: ModuleId, questionIds: string[], limit: number): ModuleR
   };
 }
 
-export function createMock(modules: ModuleId[], strict: boolean): string {
+export function createMock(paperId: PaperId, modules: ModuleId[], strict: boolean): string {
+  const paper = PAPER_BY_ID[paperId];
   const ordered = MODULE_ORDER.filter((m) => modules.includes(m));
+  const name = `${paper.label} · ${paper.name}`;
   const attempt: Attempt = {
     id: uid(),
     kind: 'mock',
+    paper: paperId,
     strict,
     instant: false,
-    title: ordered.length === 3 ? 'Crucible predicted paper' : 'Crucible paper: ' + ordered.join(' + '),
+    title: ordered.length === 3 ? name : `${name}: ` + ordered.map((m) => (m === 'PH' ? 'Physics' : m === 'M1' ? 'Maths 1' : 'Maths 2')).join(' + '),
     createdAt: Date.now(),
     finishedAt: null,
-    modules: ordered.map((m) => newRun(m, PAPER[m].map((q) => q.id), MODULE_SECONDS)),
+    modules: ordered.map((m) => newRun(m, paper.modules[m].map((q) => q.id), MODULE_SECONDS)),
     pos: { m: 0, q: 0 },
     interstitial: true,
   };

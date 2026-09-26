@@ -1,9 +1,9 @@
 // Visual QA: renders pages and every question (with its solution) in Chromium
 // and saves screenshots for review.
-//   node scripts/screenshots.mjs [outDir] [--only=M1-05,PH-03] [--pages] [--pagelist=home,bank]
+//   node scripts/screenshots.mjs [outDir] [--only=M1-05,2-PH-03] [--prefix=3-] [--pages] [--pagelist=home,bank]
 //                                [--questions] [--tabs] [--dark] [--width=390]
+import { mkdirSync, readFileSync } from 'node:fs';
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -35,7 +35,7 @@ async function go(hash) {
 }
 
 if (doPages) {
-  const all = ['', '#paper', '#practice', '#bank', '#learn', '#learn.M4', '#learn.MM6', '#learn.P3', '#formulas', '#cards', '#drills', '#strategy', '#planner', '#progress', '#calculator', '#settings', '#about'];
+  const all = ['', '#paper', '#paper.forge', '#coverage', '#practice', '#bank', '#learn', '#learn.M4', '#learn.MM6', '#learn.P3', '#formulas', '#cards', '#drills', '#strategy', '#planner', '#progress', '#calculator', '#settings', '#about'];
   const pick = (args.find((a) => a.startsWith('--pagelist=')) ?? '').replace('--pagelist=', '').split(',').filter(Boolean);
   const pages = pick.length ? all.filter((h) => pick.includes(h.replace('#', '') || 'home')) : all;
   for (const h of pages) {
@@ -46,13 +46,13 @@ if (doPages) {
 }
 
 if (doQuestions) {
+  // Every question id from build/content.json (written by npm run verify:answers), or --prefix=2- for one paper.
+  const prefix = (process.argv.find((a) => a.startsWith('--prefix=')) ?? '').slice(9);
   const ids = only.length
     ? only
-    : [
-        ...Array.from({ length: 27 }, (_, i) => `M1-${String(i + 1).padStart(2, '0')}`),
-        ...Array.from({ length: 27 }, (_, i) => `PH-${String(i + 1).padStart(2, '0')}`),
-        ...Array.from({ length: 27 }, (_, i) => `M2-${String(i + 1).padStart(2, '0')}`),
-      ];
+    : JSON.parse(readFileSync('build/content.json', 'utf8'))
+        .map((q) => q.id)
+        .filter((id) => !prefix || id.startsWith(prefix));
   for (const id of ids) {
     await go(`#question.${id}`);
     const btn = page.getByRole('button', { name: 'Show solution without answering' });

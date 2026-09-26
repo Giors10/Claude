@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import { LEARN } from '../content/learn';
+import { ALL_QUESTIONS, READY_PAPERS } from '../content/paper';
+import { SPEC } from '../content/spec';
 import { FLASHCARDS } from '../content/flashcards';
 import { MODULE_ORDER, MODULES } from '../content/types';
 import { ScoreRuler } from '../components/Charts';
@@ -9,6 +11,7 @@ import { daysUntil, fmtDate } from '../lib/format';
 import { buildPlan, topicAccuracy } from '../lib/planner';
 import { href, navigate } from '../lib/router';
 import { getState, useStore } from '../lib/store';
+import { attemptPaper } from './Paper';
 
 const TOOLS: { route: string; icon: string; title: string; desc: string }[] = [
   { route: 'learn', icon: 'learn', title: 'Topic notes', desc: 'All 22 specification topics, with traps and worked examples.' },
@@ -16,7 +19,8 @@ const TOOLS: { route: string; icon: string; title: string; desc: string }[] = [
   { route: 'cards', icon: 'cards', title: 'Flashcards', desc: `${FLASHCARDS.length} cards with spaced repetition.` },
   { route: 'drills', icon: 'bolt', title: 'Speed drills', desc: 'Unlimited non-calculator arithmetic, surds, trig and logs.' },
   { route: 'strategy', icon: 'compass', title: 'Exam strategy', desc: 'Pacing checkpoints, triage and trap patterns.' },
-  { route: 'bank', icon: 'bank', title: 'Question bank', desc: 'Every question, searchable by spec point and skill.' },
+  { route: 'bank', icon: 'bank', title: 'Question bank', desc: 'Every question, searchable by paper, spec point and skill.' },
+  { route: 'coverage', icon: 'grid', title: 'Specification map', desc: 'Every point of the ESAT specification, with the questions that test it.' },
   { route: 'planner', icon: 'calendar', title: 'Study planner', desc: 'A day-by-day plan built from your weakest topics.' },
   { route: 'calculator', icon: 'calculator', title: 'Score calculator', desc: 'Raw mark to 1.0–9.0 with official percentiles.' },
 ];
@@ -43,14 +47,15 @@ export function HomePage() {
       <section className="hero">
         <div className="stack-l">
           <span className="eyebrow">For the October 2026 and January 2027 ESAT</span>
-          <h1>The hardest ESAT paper you’ll sit before the real one.</h1>
+          <h1>The hardest ESAT papers you’ll sit before the real one.</h1>
           <p className="lede">
-            81 original questions across Mathematics 1, Physics and Mathematics 2, set harder than the real test. Every answer is triple-checked,
-            every question has a full worked solution, and your result is scored on the official 1.0–9.0 scale.
+            {READY_PAPERS.length} full mock papers, {ALL_QUESTIONS.length} original questions across Mathematics 1, Physics and Mathematics 2, all
+            set harder than the real test and together covering every point of the specification. Every answer is triple-checked, every question
+            has a full worked solution, and your result is scored on the official 1.0–9.0 scale.
           </p>
           <div className="row">
             <button type="button" className="btn btn-primary btn-lg" onClick={() => navigate('paper')}>
-              <Icon name="play" /> Sit the Crucible paper
+              <Icon name="play" /> Sit a mock paper
             </button>
             <button type="button" className="btn btn-lg" onClick={() => navigate('practice')}>
               <Icon name="target" /> Practise by topic
@@ -58,12 +63,12 @@ export function HomePage() {
           </div>
           <div className="hero-spec">
             <div>
-              <div className="v tnum">81</div>
+              <div className="v tnum">{READY_PAPERS.length} × 81</div>
               <div className="k">questions, 27 per module</div>
             </div>
             <div>
-              <div className="v tnum">3 × 40</div>
-              <div className="k">minutes, separately timed</div>
+              <div className="v tnum">{SPEC.length}</div>
+              <div className="k">specification points, all tested</div>
             </div>
             <div>
               <div className="v tnum">1.0–9.0</div>
@@ -76,7 +81,7 @@ export function HomePage() {
           <ScoreRuler module="M1" score={m1?.score.scaled} low={m1?.score.low} high={m1?.score.high} label="You" />
           <p className="muted" style={{ fontSize: '0.86rem' }}>
             {m1
-              ? `${m1.raw}/27 on the Crucible paper. The bars show how October 2025 candidates scored.`
+              ? `${m1.raw}/27 on ${attemptPaper(lastMock!).label}. The bars show how October 2025 candidates scored.`
               : 'Every result is placed against the official distribution: the median candidate scores 4.5 and the top 10% score above 7.0.'}
           </p>
         </div>
@@ -140,7 +145,7 @@ export function HomePage() {
       {graded && (
         <section className="card stack">
           <div className="row-between">
-            <h3>Latest paper</h3>
+            <h3>Latest paper: {attemptPaper(lastMock!).label}</h3>
             <a href={href('results', lastMock!.id)}>Full analysis</a>
           </div>
           <div className="grid grid-3">

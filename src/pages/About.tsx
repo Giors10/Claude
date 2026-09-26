@@ -2,6 +2,8 @@ import React from 'react';
 import { ScoreRuler } from '../components/Charts';
 import { DISTRIBUTION_SOURCE } from '../lib/distributions';
 import { DIFFICULTY_LOGIT, SLOPE, STANDARD_ITEMS, THETA_SD, conversionTable } from '../lib/rasch';
+import { ALL_QUESTIONS, PAPERS } from '../content/paper';
+import { SPEC } from '../content/spec';
 import { Rich } from '../lib/rich';
 import { href } from '../lib/router';
 
@@ -15,10 +17,23 @@ export function AboutPage() {
         <span className="eyebrow">About</span>
         <h1>About ESAT Crucible</h1>
         <p className="lede">
-          A free, independent preparation site for the Engineering and Science Admissions Test, built around one deliberately hard predicted paper
-          covering Mathematics 1, Mathematics 2 and Physics.
+          A free, independent preparation site for the Engineering and Science Admissions Test, built around {PAPERS.length} full mock papers
+          ({ALL_QUESTIONS.length} original questions) covering Mathematics 1, Physics and Mathematics 2.
         </p>
       </header>
+
+      <section className="card stack">
+        <h2 style={{ fontSize: '1.3rem' }}>The three mock papers</h2>
+        <Rich
+          text={t`- **Mock 1 · Crucible** is the hardest: every question is set above real ESAT difficulty, so it rewards speed and insight.
+- **Mock 2 · Forge** and **Mock 3 · Anvil** are built to feel like the real test, with its mix of quick wins, long calculations and "which statements are correct" questions, pitched a little above real difficulty.
+
+Together the three papers test **every one of the ${SPEC.length} points** in the specification at least once. A good order is Mock 2, then Mock 3, with Mock 1 last.`}
+        />
+        <p>
+          <a href={href('coverage')}>Open the specification map</a> to see each point with the questions that test it.
+        </p>
+      </section>
 
       <section className="card stack">
         <h2 style={{ fontSize: '1.3rem' }}>How the questions were written and checked</h2>
@@ -51,7 +66,7 @@ This site follows the same approach:
 - The **likely range** shown with each score is ±1 standard error of $\theta$.
 - **Percentiles** use UAT-UK's published October 2025 score distributions for each module.
 
-Because the Crucible paper is harder than a real ESAT paper, the same raw mark converts to a higher score. The results page also shows the raw mark you would expect on a typical paper at the same ability.
+Because every mock paper is harder than a real ESAT paper on average, a typical raw mark converts to a higher score than on a real paper, most of all on Mock 1. Near full marks the difference fades: a real module has a few extremely hard questions, and the scale gives them their due. The results page also shows the raw mark you would expect on a typical paper at the same ability.
 
 **Limitations.** Real question difficulties are measured from thousands of candidates; these are expert estimates. Treat every score as an estimate of about ±0.5, and use it to track your own progress rather than to predict an offer.`}
         />

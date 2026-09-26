@@ -10,6 +10,7 @@ import { moduleInsights, type Insight } from '../lib/insights';
 import { conversionTable, itemDifficulty } from '../lib/rasch';
 import { href, navigate } from '../lib/router';
 import { useStore } from '../lib/store';
+import { attemptPaper } from './Paper';
 
 const TONE_ICON: Record<Insight['tone'], string> = { good: 'check', warn: 'clock', bad: 'x', info: 'bulb' };
 const TONE_COLOR: Record<Insight['tone'], string> = { good: 'var(--good)', warn: 'var(--warn)', bad: 'var(--bad)', info: 'var(--accent-text)' };
@@ -54,13 +55,14 @@ export function ResultsPage({ attemptId }: { attemptId?: string }) {
     <div className="page">
       <header className="page-head">
         <span className="eyebrow">
-          {isMock ? 'Crucible paper' : 'Practice set'} · {fmtDateTime(attempt.createdAt)}
+          {isMock ? `${attemptPaper(attempt).label} · ${attemptPaper(attempt).name}` : 'Practice set'} · {fmtDateTime(attempt.createdAt)}
           {isMock ? ` · ${attempt.strict ? 'strict rules' : 'relaxed rules'}` : ''}
         </span>
         <h1>{isMock ? 'Your estimated ESAT scores' : attempt.title}</h1>
         <p className="lede">
           Scores use the same Rasch method as the real ESAT, placed on the official 1.0–9.0 scale (typical candidate 4.5, top 10% above 7.0).
-          Because this paper is harder than the real test, the same raw mark earns a higher score. <a href={href('about')}>How scoring works</a>
+          Because this paper is harder than the real test on average, a typical raw mark converts to a higher score than it would on a real
+          paper. <a href={href('about')}>How scoring works</a>
         </p>
       </header>
 

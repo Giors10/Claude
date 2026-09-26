@@ -110,13 +110,13 @@ export function ProgressPage() {
       <section className="card stack">
         <div className="row-between">
           <h3>Estimated ESAT score over time</h3>
-          <a href={href('paper')}>Crucible paper</a>
+          <a href={href('paper')}>Mock papers</a>
         </div>
         {series.length ? (
           <TrendChart series={series} />
         ) : (
           <div className="empty">
-            Complete the Crucible paper to start your score history. <a href={href('paper')}>Sit it now</a>
+            Complete a mock paper to start your score history. <a href={href('paper')}>Choose a paper</a>
           </div>
         )}
       </section>

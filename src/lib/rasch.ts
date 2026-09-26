@@ -10,9 +10,9 @@ import type { Difficulty, Question } from '../content/types';
  * (≈12/27 → 4.5, ≈17/27 → 6.0, ≈20/27 → 7.0, 25+/27 → 9.0):
  *   - the spread of candidate ability, THETA_SD (logits);
  *   - the item difficulties of a "standard" ESAT module.
- * Crucible questions are placed on the same scale from their difficulty
- * rating, so a raw mark on this (harder) paper converts to a higher score
- * than the same raw mark on a standard paper.
+ * Mock-paper questions are placed on the same scale from their difficulty
+ * rating, so a typical raw mark on a (harder) mock converts to a higher
+ * score than the same raw mark on a standard paper.
  */
 
 export const MEDIAN_SCORE = 4.5;

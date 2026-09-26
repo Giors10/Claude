@@ -24,6 +24,7 @@ import { ProgressPage } from './pages/Progress';
 import { CalculatorPage } from './pages/Calculator';
 import { SettingsPage } from './pages/Settings';
 import { AboutPage } from './pages/About';
+import { CoveragePage } from './pages/Coverage';
 
 interface NavItem {
   route: string;
@@ -36,7 +37,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
     group: 'Prepare',
     items: [
       { route: 'home', label: 'Dashboard', icon: 'home' },
-      { route: 'paper', label: 'Crucible paper', icon: 'paper' },
+      { route: 'paper', label: 'Mock papers', icon: 'paper' },
       { route: 'practice', label: 'Practice', icon: 'target' },
       { route: 'bank', label: 'Question bank', icon: 'bank' },
     ],
@@ -49,6 +50,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
       { route: 'cards', label: 'Flashcards', icon: 'cards' },
       { route: 'drills', label: 'Speed drills', icon: 'bolt' },
       { route: 'strategy', label: 'Exam strategy', icon: 'compass' },
+      { route: 'coverage', label: 'Specification map', icon: 'grid' },
     ],
   },
   {
@@ -158,7 +160,7 @@ function Page() {
     case 'home':
       return <HomePage />;
     case 'paper':
-      return <PaperPage />;
+      return <PaperPage paperId={a0} />;
     case 'exam':
       return <ExamPage />;
     case 'results':
@@ -191,6 +193,8 @@ function Page() {
       return <SettingsPage />;
     case 'about':
       return <AboutPage />;
+    case 'coverage':
+      return <CoveragePage module={a0} />;
     default:
       return (
         <div className="page">
@@ -267,7 +271,7 @@ export function App() {
         </Suspense>
         <footer className="footer">
           ESAT Crucible is an independent study tool, not affiliated with or endorsed by UAT-UK, the University of Cambridge or Imperial College
-          London. The predicted paper is original; scores are model-based estimates.
+          London. The mock papers are original; scores are model-based estimates.
         </footer>
       </div>
     </div>

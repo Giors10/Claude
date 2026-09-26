@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_QUESTIONS, PAPER } from '../src/content/paper';
-import { MODULES, type Question } from '../src/content/types';
+import { ALL_QUESTIONS, PAPERS } from '../src/content/paper';
+import { SPEC, SPEC_BY_CODE } from '../src/content/spec';
+import { MODULES, MODULE_ORDER, type Question } from '../src/content/types';
 import { DIAGRAMS } from '../src/diagrams';
 import { extractMath, parseRich } from '../src/lib/rich';
 import { assertTex } from '../src/lib/tex';
@@ -22,21 +23,51 @@ function richFields(q: Question): [string, string][] {
   return out;
 }
 
+/** Every module of every paper, labelled "Mock 2 M1" for error messages. */
+const MODULE_SETS: [string, Question[]][] = PAPERS.flatMap((p) => MODULE_ORDER.map((m) => [`${p.label} ${m}`, p.modules[m]] as [string, Question[]]));
+
 describe('paper structure', () => {
-  it('has 27 questions in each module, numbered 1-27', () => {
-    for (const [mod, qs] of Object.entries(PAPER)) {
-      expect(qs, mod).toHaveLength(27);
-      qs.forEach((q, i) => {
-        expect(q.n, q.id).toBe(i + 1);
-        expect(q.module, q.id).toBe(mod);
-        expect(q.id, q.id).toBe(`${mod}-${String(i + 1).padStart(2, '0')}`);
-      });
+  it('has three papers of 27 questions per module, numbered 1-27 with prefixed ids', () => {
+    expect(PAPERS).toHaveLength(3);
+    for (const p of PAPERS) {
+      for (const mod of MODULE_ORDER) {
+        const qs = p.modules[mod];
+        expect(qs, `${p.label} ${mod}`).toHaveLength(27);
+        qs.forEach((q, i) => {
+          expect(q.n, q.id).toBe(i + 1);
+          expect(q.module, q.id).toBe(mod);
+          expect(q.id, q.id).toBe(`${p.idPrefix}${mod}-${String(i + 1).padStart(2, '0')}`);
+        });
+      }
     }
   });
 
-  it('has unique ids', () => {
+  it('has unique ids and unique titles within each paper', () => {
     const ids = new Set(ALL_QUESTIONS.map((q) => q.id));
-    expect(ids.size).toBe(81);
+    expect(ids.size).toBe(ALL_QUESTIONS.length);
+    expect(ALL_QUESTIONS.length).toBe(243);
+    for (const p of PAPERS) {
+      const titles = MODULE_ORDER.flatMap((m) => p.modules[m].map((q) => q.title));
+      expect(new Set(titles).size, p.label).toBe(titles.length);
+    }
+  });
+
+  it('tags every question with real specification points', () => {
+    for (const q of ALL_QUESTIONS) {
+      expect(q.spec.length, q.id).toBeGreaterThanOrEqual(1);
+      for (const code of q.spec) {
+        const point = SPEC_BY_CODE.get(code);
+        expect(point, `${q.id} spec ${code} is not a specification point`).toBeTruthy();
+        expect(point?.module, `${q.id} spec ${code}`).toBe(q.module);
+      }
+      expect(q.spec.some((c) => SPEC_BY_CODE.get(c)?.topic === q.topic), `${q.id}: topic ${q.topic} should match one of its spec points`).toBe(true);
+    }
+  });
+
+  it('tests every point of the specification at least once across the three papers', () => {
+    const covered = new Set(ALL_QUESTIONS.flatMap((q) => q.spec));
+    const missing = SPEC.filter((s) => !covered.has(s.code)).map((s) => s.code);
+    expect(missing).toEqual([]);
   });
 
   it('uses topics that belong to the module', () => {
@@ -93,7 +124,7 @@ describe('paper structure', () => {
   });
 
   it('spreads correct answers across the letters', () => {
-    for (const [mod, qs] of Object.entries(PAPER)) {
+    for (const [mod, qs] of MODULE_SETS) {
       const counts = new Map<number, number>();
       qs.forEach((q) => counts.set(q.answer, (counts.get(q.answer) ?? 0) + 1));
       for (const [letter, n] of counts) expect(n, `${mod} letter ${letter}`).toBeLessThanOrEqual(7);
@@ -129,7 +160,7 @@ describe('rich text and maths', () => {
         }
       }
     }
-    expect(count).toBeGreaterThan(500);
+    expect(count).toBeGreaterThan(1500);
   });
 
   it('parses every field into blocks without leaving raw markup behind', () => {

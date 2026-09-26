@@ -2,10 +2,13 @@ import React from 'react';
 import * as M1 from './m1';
 import * as M2 from './m2';
 import * as PH from './ph';
+import * as P2M1 from './p2m1';
+import * as P2PH from './p2ph';
+import * as P2M2 from './p2m2';
 
 type DiagramComponent = () => React.ReactElement;
 
-/** Every diagram used by the paper, keyed by the id referenced in the content. */
+/** Every diagram used by the papers, keyed by the id referenced in the content. */
 export const DIAGRAMS: Record<string, DiagramComponent> = {
   'm1-speed-time': M1.M1SpeedTime,
   'm1-circle-theorem': M1.M1CircleTheorem,
@@ -43,6 +46,35 @@ export const DIAGRAMS: Record<string, DiagramComponent> = {
   'ph-emf-d': PH.makeEmfOption('ph-emf-d'),
   'ph-emf-e': PH.makeEmfOption('ph-emf-e'),
   'ph-emf-f': PH.makeEmfOption('ph-emf-f'),
+
+  // Mock 2 (Forge)
+  'p2-m1-trig': P2M1.P2M1Trig,
+  'p2-m1-lines-sol': P2M1.P2M1LinesSolution,
+  'p2-m1-bearings-sol': P2M1.P2M1BearingsSolution,
+  'p2-m1-goals': P2M1.P2M1Goals,
+  'p2-m1-region-sol': P2M1.P2M1RegionSolution,
+  'p2-m1-cyclic': P2M1.P2M1Cyclic,
+  'p2-m1-trough': P2M1.P2M1Trough,
+  'p2-m1-views': P2M1.P2M1Views,
+  'p2-ph-wave': P2PH.P2PhWave,
+  'p2-ph-diodes': P2PH.P2PhDiodes,
+  'p2-ph-gen': P2PH.P2PhGenerator,
+  'p2-ph-gen-a': P2PH.makeGenOption('p2-ph-gen-a'),
+  'p2-ph-gen-b': P2PH.makeGenOption('p2-ph-gen-b'),
+  'p2-ph-gen-c': P2PH.makeGenOption('p2-ph-gen-c'),
+  'p2-ph-gen-d': P2PH.makeGenOption('p2-ph-gen-d'),
+  'p2-ph-gen-e': P2PH.makeGenOption('p2-ph-gen-e'),
+  'p2-ph-gen-f': P2PH.makeGenOption('p2-ph-gen-f'),
+  'p2-ph-mirrors': P2PH.P2PhMirrors,
+  'p2-ph-mirrors-sol': P2PH.P2PhMirrorsSolution,
+  'p2-ph-spring': P2PH.P2PhSpring,
+  'p2-ph-vt': P2PH.P2PhVt,
+  'p2-ph-vt-sol': P2PH.P2PhVtSolution,
+  'p2-ph-heating': P2PH.P2PhHeating,
+  'p2-ph-circuit': P2PH.P2PhCircuit,
+  'p2-m2-circle': P2M2.P2M2Circle,
+  'p2-m2-parabola': P2M2.P2M2Parabola,
+  'p2-m2-quartic-sol': P2M2.P2M2QuarticSolution,
 };
 
 export function Diagram({ id }: { id: string }) {

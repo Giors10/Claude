@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ALL_QUESTIONS, getQuestion } from '../content/paper';
-import { MODULES } from '../content/types';
+import { ALL_QUESTIONS, getQuestion, questionLabel } from '../content/paper';
 import { Icon } from '../components/Icon';
 import { QuestionView } from '../components/QuestionView';
 import { SolutionPanel } from '../components/SolutionPanel';
@@ -50,7 +49,7 @@ export function QuestionPage({ qid }: { qid?: string }) {
           <Icon name="left" size={16} /> Question bank
         </a>
         <span className="eyebrow">
-          {MODULES[q.module].name} · {q.id}
+          {questionLabel(q)}
         </span>
       </div>
 
@@ -98,10 +97,10 @@ export function QuestionPage({ qid }: { qid?: string }) {
 
       <div className="row-between">
         <button type="button" className="btn" disabled={!prev} onClick={() => prev && navigate('question', prev.id)}>
-          <Icon name="left" /> {prev ? prev.id : 'Previous'}
+          <Icon name="left" /> {prev ? questionLabel(prev) : 'Previous'}
         </button>
         <button type="button" className="btn btn-primary" disabled={!next} onClick={() => next && navigate('question', next.id)}>
-          {next ? next.id : 'Next'} <Icon name="right" />
+          {next ? questionLabel(next) : 'Next'} <Icon name="right" />
         </button>
       </div>
     </div>

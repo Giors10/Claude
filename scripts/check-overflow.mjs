@@ -2,8 +2,9 @@
 // every notes page at phone width in Chromium, and reports any formula,
 // option or table that is wider than the space it has, plus any page that
 // scrolls sideways.
-//   node scripts/check-overflow.mjs [--width=375]
+//   node scripts/check-overflow.mjs [--width=375] [--prefix=2-] [--only=2-M1-05,3-PH-10] [--no-notes]
 import { chromium } from 'playwright';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -38,7 +39,14 @@ function measure(where) {
 }
 
 const problems = [];
-const ids = ['M1', 'PH', 'M2'].flatMap((m) => Array.from({ length: 27 }, (_, i) => `${m}-${String(i + 1).padStart(2, '0')}`));
+// Question ids come from build/content.json (npm run verify:answers writes it); --only=ID,ID or --prefix=2- narrows the run.
+const only = (process.argv.find((a) => a.startsWith('--only=')) ?? '').slice(7).split(',').filter(Boolean);
+const prefix = (process.argv.find((a) => a.startsWith('--prefix=')) ?? '').slice(9);
+const ids = only.length
+  ? only
+  : JSON.parse(readFileSync('build/content.json', 'utf8'))
+      .map((q) => q.id)
+      .filter((id) => !prefix || (prefix === '1-' ? /^(M1|PH|M2)-/.test(id) : id.startsWith(prefix)));
 for (const id of ids) {
   await go(`#question.${id}`);
   problems.push(...(await measure(`${id} question`)));
@@ -55,14 +63,18 @@ for (const id of ids) {
   }
 }
 
-const topics = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'MM1', 'MM2', 'MM3', 'MM4', 'MM5', 'MM6', 'MM7', 'MM8'];
+const noNotes = process.argv.includes('--no-notes');
+const topics = noNotes ? [] : ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'MM1', 'MM2', 'MM3', 'MM4', 'MM5', 'MM6', 'MM7', 'MM8'];
 for (const t of topics) {
   await go(`#learn.${t}`);
   const btn = page.getByRole('button', { name: /show the solution/ });
   if (await btn.count()) await btn.click();
   problems.push(...(await measure(`notes ${t}`)));
 }
-for (const h of ['', '#paper', '#practice', '#bank', '#formulas', '#cards', '#drills', '#strategy', '#planner', '#progress', '#calculator', '#settings', '#about']) {
+const sitePages = noNotes
+  ? []
+  : ['', '#paper', '#paper.forge', '#practice', '#bank', '#formulas', '#cards', '#drills', '#strategy', '#coverage', '#coverage.PH', '#coverage.M2', '#planner', '#progress', '#calculator', '#settings', '#about'];
+for (const h of sitePages) {
   await go(h);
   problems.push(...(await measure(`page ${h || 'home'}`)));
 }
@@ -73,5 +85,5 @@ if (problems.length) {
   console.log(`${problems.length} layout problem(s) at ${width}px:\n` + problems.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log(`No overflow at ${width}px across 81 questions (all tabs), 22 notes pages and 13 site pages.`);
+  console.log(`No overflow at ${width}px across ${ids.length} questions (all tabs), ${topics.length} notes pages and ${sitePages.length} site pages.`);
 }

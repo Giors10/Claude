@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LEARN, learnTopic } from '../content/learn';
-import { ALL_QUESTIONS } from '../content/paper';
+import { ALL_QUESTIONS, PAPERS } from '../content/paper';
 import { MODULE_ORDER, MODULES } from '../content/types';
 import { Icon } from '../components/Icon';
 import { Rich, RichInline } from '../lib/rich';
@@ -214,16 +214,25 @@ function TopicArticle({ code }: { code: string }) {
               </button>
             </div>
             {showQs && (
-              <p className="muted" style={{ fontSize: '0.9rem' }}>
-                {qs.map((q, i) => (
-                  <React.Fragment key={q.id}>
-                    {i > 0 && ' · '}
-                    <a href={href('question', q.id)}>
-                      {q.id}: {q.title}
-                    </a>
-                  </React.Fragment>
-                ))}
-              </p>
+              <div className="stack" style={{ gap: 8 }}>
+                {PAPERS.map((p) => {
+                  const mine = qs.filter((q) => p.modules[q.module].includes(q));
+                  if (!mine.length) return null;
+                  return (
+                    <p key={p.id} className="muted" style={{ fontSize: '0.9rem', margin: 0 }}>
+                      <strong style={{ color: 'var(--ink-2)' }}>{p.label}:</strong>{' '}
+                      {mine.map((q, i) => (
+                        <React.Fragment key={q.id}>
+                          {i > 0 && ' · '}
+                          <a href={href('question', q.id)}>
+                            Q{q.n} {q.title}
+                          </a>
+                        </React.Fragment>
+                      ))}
+                    </p>
+                  );
+                })}
+              </div>
             )}
           </section>
 

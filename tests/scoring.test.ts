@@ -34,10 +34,12 @@ describe('Rasch scoring', () => {
 
   it('gives a higher score for a typical raw mark on every mock paper, since each is set harder than the real test', () => {
     // Near full marks the gap closes: a standard module has a few extremely hard items.
+    // Compare the ability estimates: at one decimal place the two scaled scores can round to the same value.
     for (const qs of MODULE_SETS) {
       const items = qs.map(itemDifficulty);
       for (const raw of [6, 9, 12, 15, 18]) {
-        expect(scoreModule(raw, items).scaled).toBeGreaterThan(scoreModule(raw, STANDARD_ITEMS).scaled);
+        expect(scoreModule(raw, items).theta).toBeGreaterThan(scoreModule(raw, STANDARD_ITEMS).theta);
+        expect(scoreModule(raw, items).scaled).toBeGreaterThanOrEqual(scoreModule(raw, STANDARD_ITEMS).scaled);
       }
     }
   });

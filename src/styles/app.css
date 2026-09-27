@@ -900,6 +900,18 @@ table.data td.nowrap {
   white-space: nowrap;
 }
 
+/* Phones: tighter cells so the visible columns fit without sideways scrolling. */
+@media (max-width: 420px) {
+  table.data th,
+  table.data td {
+    padding: 8px 8px;
+  }
+
+  table.data td {
+    hyphens: auto;
+  }
+}
+
 .topic-cell {
   display: inline-flex;
   align-items: center;

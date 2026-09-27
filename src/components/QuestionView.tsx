@@ -147,17 +147,23 @@ export function QuestionView({ q, number, showMeta, selected, struck = [], onSel
                   style={onStrike && interactive && typeof o === 'string' ? { paddingRight: 44 } : undefined}
                 >
                   <span className="letter">{LETTERS[i]}</span>
-                  <span className="opt-body">
-                    {typeof o === 'string' ? (
-                      <RichInline text={o} />
-                    ) : (
-                      <>
+                  {typeof o === 'string' ? (
+                    // The tag wraps below a long answer instead of squeezing it.
+                    <span className="opt-main">
+                      <span className="opt-body">
+                        <RichInline text={o} />
+                      </span>
+                      {tag && <span className="opt-tag">{tag}</span>}
+                    </span>
+                  ) : (
+                    <>
+                      <span className="opt-body">
                         <Diagram id={o.diagram} />
                         <span className="visually-hidden">{o.alt}</span>
-                      </>
-                    )}
-                  </span>
-                  {tag && <span className="opt-tag">{tag}</span>}
+                      </span>
+                      {tag && <span className="opt-tag">{tag}</span>}
+                    </>
+                  )}
                 </div>
                 {onStrike && interactive && (
                   <button

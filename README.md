@@ -1,13 +1,15 @@
 # ESAT Crucible
 
-A preparation site for the **Engineering and Science Admissions Test (ESAT)**, built around one deliberately hard predicted paper for **Mathematics 1, Physics and Mathematics 2**, the three modules Cambridge Engineering requires. It scores you on the official **1.0–9.0 scale** and teaches the specification content with notes, flashcards and drills.
+A preparation site for the **Engineering and Science Admissions Test (ESAT)**, built around three original mock papers for **Mathematics 1, Physics and Mathematics 2**, the three modules Cambridge Engineering requires. It scores you on the official **1.0–9.0 scale** and teaches the specification content with notes, flashcards and drills.
 
 It is a single static page: no server, no accounts, no trackers. Progress is saved in the browser and can be exported.
 
 ## What is inside
 
-**The Crucible paper**
-- 81 original questions (27 per module), written to the 2026 content specification for the October 2026 and January 2027 sittings and set **harder than a typical real paper**.
+**Three mock papers**
+- 243 original questions (27 per module in each paper), written to the 2026 content specification for the October 2026 and January 2027 sittings.
+- **Mock 1 · Crucible** is set deliberately **harder than a typical real paper**. **Mock 2 · Forge** and **Mock 3 · Anvil** are built to feel like the real test, pitched a little above real difficulty.
+- Together the three papers test **every point of the specification** at least once, and a specification map shows which questions test each point.
 - Real test conditions: 40 minutes per module, separately timed, run in the real order (Mathematics 1, Physics, Mathematics 2), with a question navigator, flags, cross-out, a scratchpad, time warnings and keyboard shortcuts.
 - Question styles from the real test: calculations, "which statements are true" (8 options), graph-matching with drawn options, and questions built on circuits, graphs and geometry diagrams.
 
@@ -39,7 +41,7 @@ Long display equations re-typeset themselves on narrow screens, breaking at impl
 
 ## How scores are estimated
 
-The ESAT is scored with the Rasch model, and UAT-UK does not publish conversion tables. This site uses the same model: each question has a difficulty in logits set from its rating, your ability θ is the maximum-likelihood estimate from your raw mark, and θ maps linearly onto the reported scale (score = 4.5 + 1.50 θ, placing the 90th percentile at 7.0). The constants reproduce widely reported conversions for typical papers. Because this paper is harder, the same raw mark earns a higher score here. Treat every score as an estimate of about ±0.5. The site's About page has the details.
+The ESAT is scored with the Rasch model, and UAT-UK does not publish conversion tables. This site uses the same model: each question has a difficulty in logits set from its rating, your ability θ is the maximum-likelihood estimate from your raw mark, and θ maps linearly onto the reported scale (score = 4.5 + 1.50 θ, placing the 90th percentile at 7.0). The constants reproduce widely reported conversions for typical papers. Because every mock is harder than a real paper on average, a typical raw mark earns a higher score here than on a real paper, most of all on Mock 1; near full marks the difference fades. Treat every score as an estimate of about ±0.5. The site's About page has the details.
 
 ## Running it
 
@@ -55,7 +57,7 @@ Quality checks:
 
 ```bash
 npm run check          # TypeScript and unit tests
-npm run verify:answers # recompute all 81 answers (Python 3: pip install -r scripts/requirements.txt)
+npm run verify:answers # recompute all 243 answers (Python 3: pip install -r scripts/requirements.txt)
 npm run check:layout   # phone and tablet overflow check in Chromium (after a build)
 npm run shots -- build/shots --questions --tabs   # screenshots of every question for review
 ```
@@ -69,7 +71,7 @@ npm run shots -- build/shots --questions --tabs   # screenshots of every questio
 
 ```
 src/
-  content/paper/      the 81 questions (m1.ts, ph.ts, m2.ts)
+  content/paper/      the 243 questions: mock1/, mock2/, mock3/ (m1.ts, ph.ts, m2.ts each) and the paper registry
   content/learn/      topic notes;  content/flashcards.ts
   diagrams/           SVG diagrams for questions, options and solutions
   lib/                scoring (rasch.ts), exam engine, planner, drills, store, rich text and maths layout

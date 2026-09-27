@@ -9,6 +9,7 @@ from decimal import Decimal, getcontext
 from fractions import Fraction as F
 from itertools import product
 
+import numpy as np
 import sympy as sp
 
 getcontext().prec = 80

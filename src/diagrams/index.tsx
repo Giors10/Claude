@@ -5,6 +5,9 @@ import * as PH from './ph';
 import * as P2M1 from './p2m1';
 import * as P2PH from './p2ph';
 import * as P2M2 from './p2m2';
+import * as P3M1 from './p3m1';
+import * as P3PH from './p3ph';
+import * as P3M2 from './p3m2';
 
 type DiagramComponent = () => React.ReactElement;
 
@@ -75,6 +78,50 @@ export const DIAGRAMS: Record<string, DiagramComponent> = {
   'p2-m2-circle': P2M2.P2M2Circle,
   'p2-m2-parabola': P2M2.P2M2Parabola,
   'p2-m2-quartic-sol': P2M2.P2M2QuarticSolution,
+
+  // Mock 3 (Anvil)
+  'p3-m1-cubic-a': P3M1.makeCubicOption('p3-m1-cubic-a'),
+  'p3-m1-cubic-b': P3M1.makeCubicOption('p3-m1-cubic-b'),
+  'p3-m1-cubic-c': P3M1.makeCubicOption('p3-m1-cubic-c'),
+  'p3-m1-cubic-d': P3M1.makeCubicOption('p3-m1-cubic-d'),
+  'p3-m1-cubic-e': P3M1.makeCubicOption('p3-m1-cubic-e'),
+  'p3-m1-cubic-f': P3M1.makeCubicOption('p3-m1-cubic-f'),
+  'p3-m1-sales': P3M1.P3M1Sales,
+  'p3-m1-scatter': P3M1.P3M1Scatter,
+  'p3-m1-tangent': P3M1.P3M1Tangent,
+  'p3-m1-venn-sol': P3M1.P3M1VennSolution,
+  'p3-m1-cuboid': P3M1.P3M1Cuboid,
+  'p3-m1-transform-sol': P3M1.P3M1TransformSolution,
+  'p3-m1-vectors': P3M1.P3M1Vectors,
+  'p3-m1-trapezium': P3M1.P3M1Trapezium,
+  'p3-m1-trapezium-sol': P3M1.P3M1TrapeziumSolution,
+  'p3-ph-motor': P3PH.P3PhMotor,
+  'p3-ph-block-a': P3PH.makeBlockOption('p3-ph-block-a'),
+  'p3-ph-block-b': P3PH.makeBlockOption('p3-ph-block-b'),
+  'p3-ph-block-c': P3PH.makeBlockOption('p3-ph-block-c'),
+  'p3-ph-block-d': P3PH.makeBlockOption('p3-ph-block-d'),
+  'p3-ph-block-e': P3PH.makeBlockOption('p3-ph-block-e'),
+  'p3-ph-block-f': P3PH.makeBlockOption('p3-ph-block-f'),
+  'p3-ph-iv': P3PH.P3PhIV,
+  'p3-ph-network': P3PH.P3PhNetwork,
+  'p3-ph-pulley': P3PH.P3PhPulley,
+  'p3-m2-circle-sol': P3M2.P3M2CircleSolution,
+  'p3-m2-abs-sol': P3M2.P3M2AbsSolution,
+  'p3-m2-apollonius-sol': P3M2.P3M2ApolloniusSolution,
+  'p3-m2-tn-sol': P3M2.P3M2TangentNormalSolution,
+  'p3-m2-rect': P3M2.P3M2Rect,
+  'p3-m2-cubic-trap-sol': P3M2.P3M2CubicTrapSolution,
+  'p3-m2-sector': P3M2.P3M2Sector,
+  'p3-m2-sector-sol': P3M2.P3M2SectorSolution,
+  'p3-m2-halve-sol': P3M2.P3M2HalveSolution,
+  'p3-m2-tangents-sol': P3M2.P3M2TangentsSolution,
+  'p3-m2-f': P3M2.P3M2F,
+  'p3-m2-tf-a': P3M2.makeTransformOption('p3-m2-tf-a'),
+  'p3-m2-tf-b': P3M2.makeTransformOption('p3-m2-tf-b'),
+  'p3-m2-tf-c': P3M2.makeTransformOption('p3-m2-tf-c'),
+  'p3-m2-tf-d': P3M2.makeTransformOption('p3-m2-tf-d'),
+  'p3-m2-tf-e': P3M2.makeTransformOption('p3-m2-tf-e'),
+  'p3-m2-tf-f': P3M2.makeTransformOption('p3-m2-tf-f'),
 };
 
 export function Diagram({ id }: { id: string }) {
